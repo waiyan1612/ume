@@ -1,0 +1,10 @@
+Watermarks
+
+- For out-of-order streams
+- Window will not fire until watermark delay is reached
+
+Lateness
+
+- Window will fire at specified intervals
+- Events after the window won't be dropped and corresponding window will be fired
+- A window can be fired multiple times

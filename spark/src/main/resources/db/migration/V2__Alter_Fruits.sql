@@ -1,0 +1,1 @@
+alter table FRUITS add COST DOUBLE PRECISION
