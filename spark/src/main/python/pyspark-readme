@@ -1,0 +1,33 @@
+###### pyspark with jupyter #####
+
+pip install jupyter_contrib_nbextensions
+jupyter contrib nbextension install --user
+pip install jupyter_nbextensions_configurator
+jupyter nbextensions_configurator enable --user
+
+export PYSPARK_DRIVER_PYTHON=jupyter
+export PYSPARK_DRIVER_PYTHON_OPTS='notebook'
+export SPARK_LOCAL_IP=127.0.0.1
+pyspark
+
+
+###### pyspark with venv (venv-pack) #####
+
+# Preparing venv
+virtualenv venv-ume
+source venv-ume/bin/activate
+pip install venv-pack numpy
+venv-pack -o venv-ume.tar.gz
+deactivate
+
+# Running Job
+source /opt/dataspark/env/hadoop.env
+source /opt/dataspark/env/spark2.env
+PYSPARK_DRIVER_PYTHON=`which python` \
+PYSPARK_PYTHON=./venv-ume/bin/python \
+spark-submit \
+--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=./venv-ume/bin/python \
+--master yarn \
+--deploy-mode client \
+--archives venv-ume.tar.gz#venv-ume \
+ume.py
