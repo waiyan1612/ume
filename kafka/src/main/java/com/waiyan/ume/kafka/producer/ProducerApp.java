@@ -1,5 +1,4 @@
 package com.waiyan.ume.kafka.producer;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +16,6 @@ public class ProducerApp {
     private static ScheduledExecutorService executor = Executors.newScheduledThreadPool (1);
     private static List<Integer> customers = new ArrayList<>();
     private static List<String> products = new ArrayList<>();
-    private static final int YEAR = 2019;
-    private static final int MONTH = 1;
 
     static {
         for(int i=0; i< 10; i++) {
@@ -28,22 +25,23 @@ public class ProducerApp {
     }
 
     public static void main(String[] args) {
-        runProducer();
+        Integer providedDelay = args.length > 0 ? Integer.valueOf(args[0]) : null;
+        runProducer(providedDelay);
     }
 
-    private static void runProducer() {
+    private static void runProducer(Integer providedDelay) {
         Producer<Long, Transaction> producer = ProducerCreator.createProducer();
         Runnable r = new Runnable () {
             @Override
             public void run() {
                 try {
-                    int currentMinute = LocalDateTime.now().getMinute();
                     Random random = new Random();
                     int randomNumber = random.nextInt(IKafkaConstants.MESSAGE_COUNT);
                     for (int index = 0; index < IKafkaConstants.MESSAGE_COUNT; index++) {
-                        Transaction txn = index == randomNumber ?
-                                generateTransaction(0) :
-                                generateTransaction(currentMinute % 30 + 1);
+                        LocalDateTime now = LocalDateTime.now();
+                        // Create delays (from 1 to 9 minutes) based on current minute
+                        int delay = providedDelay == null ? now.getMinute() % 10 : providedDelay;
+                        Transaction txn = generateTransaction(index == randomNumber ? now.minusMinutes(delay) : now);
                         ProducerRecord<Long, Transaction> record = new ProducerRecord<>(IKafkaConstants.TOPIC_NAME, (long)index, txn);
 
                         try {
@@ -57,38 +55,15 @@ public class ProducerApp {
                     }
                 } catch (Exception e) {
                     executor.shutdown();
-                    System.out.println(e.getMessage());
-                    System.out.println(e);
+                    e.printStackTrace();
                 }
             }
         };
-        executor.scheduleAtFixedRate (r,0L,1L, TimeUnit.MINUTES);
+        executor.scheduleAtFixedRate (r,0L,30L, TimeUnit.SECONDS);
     }
 
-    private static Transaction generateTransaction(int day) {
-        return new Transaction(
-                day == 0 ? getRandPurchasedDate() : LocalDate.of(YEAR, MONTH, day),
-                getRandCustomer(),
-                getRandProduct()
-        );
-    }
-
-    private static LocalDate getRandPurchasedDate() {
-        long start = LocalDate.of(YEAR, MONTH, 1).toEpochDay();
-        long end = LocalDate.of(YEAR, MONTH, 31).toEpochDay();
-        long random = ThreadLocalRandom.current().nextLong(start, end);
-        return LocalDate.ofEpochDay(random);
-    }
-
-    private static int getRandCustomer() {
+    private static Transaction generateTransaction(LocalDateTime dt) {
         Random rand = new Random();
-        int randomIndex = rand.nextInt(customers.size());
-        return customers.get(randomIndex);
-    }
-
-    private static String getRandProduct() {
-        Random rand = new Random();
-        int randomIndex = rand.nextInt(products.size());
-        return products.get(randomIndex);
+        return new Transaction(dt, customers.get(rand.nextInt(customers.size())), products.get(rand.nextInt(products.size())));
     }
 }

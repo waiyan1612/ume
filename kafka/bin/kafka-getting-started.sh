@@ -13,7 +13,9 @@ cd /opt/cloudera/parcels/KAFKA-3.1.0-1.3.1.0.p0.35/lib/kafka/bin/
 // Receiving messages
 ./kafka-console-consumer.sh --bootstrap-server 10.111.1.13:9092 --topic ume --from-beginning
 
-// Sample Producer
+// Sample Producer with 0 min delay
+java -cp kafka-assembly-0.0.1-SNAPSHOT.jar com.waiyan.ume.kafka.producer.ProducerApp 0
+// Sample Producer with varying delay
 java -cp kafka-assembly-0.0.1-SNAPSHOT.jar com.waiyan.ume.kafka.producer.ProducerApp
 
 // Sample Consumer

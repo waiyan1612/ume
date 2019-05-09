@@ -1,9 +1,9 @@
 package com.waiyan.ume.kafka.model;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class Transaction {
-    private LocalDate purchasedDate;
+    private LocalDateTime purchasedDate;
     private int customerId;
     private String productId;
 
@@ -12,7 +12,7 @@ public class Transaction {
 
     }
 
-    public Transaction(LocalDate purchasedDate, int customerId, String productId) {
+    public Transaction(LocalDateTime purchasedDate, int customerId, String productId) {
         this.purchasedDate = purchasedDate;
         this.customerId = customerId;
         this.productId = productId;
@@ -24,7 +24,7 @@ public class Transaction {
 
     public String getProductId() { return productId; }
 
-    public LocalDate getPurchasedDate() {
+    public LocalDateTime getPurchasedDate() {
         return purchasedDate;
     }
 
