@@ -16,31 +16,31 @@ object SparkSqlFunctions {
     // Reading from Seq or CSV with a schema
     val reader = new SparkReader(spark)
     val fruitsDF = reader.readFruitsCsv()
-    fruitsDF.show
 
-    // Built-In
-    val castingAndRounding = false
-    val whenOtherwise = false
-    val regex = false
-    val na = false
-    val groupByCollectList = true
-    val approxQuantile = false
-
-    // UDFS
-    val checkDuplicates = false
-    val formatDateUdf = false
+    case class Demo(
+      cast: Boolean = false, // cast, round
+      when: Boolean = false, // when-otherwise, concat, substring, split
+      explode: Boolean = true, // explode, explode_outer
+      pivot: Boolean = false,
+      regex: Boolean = false, // regexp_replace
+      na: Boolean = false, // na functions
+      groupByCollectList: Boolean = false, // flattenDistinct, collect_list
+      approxQuantile: Boolean = false, // approxQuantile
+      checkDuplicates: Boolean = false,
+      formatDateUdf: Boolean = false
+    )
+    val demo = Demo()
 
     // Casting and Rounding
-    if (castingAndRounding) {
+    if (demo.cast) {
       fruitsDF
         .withColumn("cost_int", col("cost").cast("integer"))
         .withColumn("cost_rounded", round(col("cost")).cast("integer"))
         .show
     }
 
-    // Concat, When/Otherwise, Split
     // if name >= 5, domain is abcd.com, xyz.com otherwise
-    if (whenOtherwise) {
+    if (demo.when) {
       fruitsDF
         .withColumn(
           "email",
@@ -49,8 +49,24 @@ object SparkSqlFunctions {
         .show
     }
 
+    if (demo.explode) {
+      val DAYS = Seq("SUN", "MON")
+      // alice will have nulls in dayList
+      val daysDf =
+        fruitsDF.withColumn("dayList", when(col("customer") === "alice", typedLit(null)).otherwise(typedLit(DAYS)))
+      daysDf.show
+      // alice is gone
+      daysDf.withColumn("day", explode(col("dayList"))).show
+      // How to keep alice alive
+      daysDf.withColumn("day", explode_outer(col("dayList"))).show
+    }
+
+    if (demo.pivot) {
+      fruitsDF.groupBy("customer").pivot("fruit").agg(sum("qty")).show
+    }
+
     // Regex replace
-    if (regex) {
+    if (demo.regex) {
       fruitsDF
         .withColumn("fruit_replaced", regexp_replace(col("fruit"), lit("apple"), lit("pineapple")))
         .withColumn("fruit_regex_replaced", regexp_replace(col("fruit"), lit("apple|mango"), lit("banana")))
@@ -58,7 +74,7 @@ object SparkSqlFunctions {
     }
 
     // NA Fill/ Drop
-    if (na) {
+    if (demo.na) {
       fruitsDF
         .withColumn("cost", col("cost").cast("double"))
         .withColumn("qty", col("qty").cast("integer"))
@@ -72,8 +88,7 @@ object SparkSqlFunctions {
         .show
     }
 
-    // Flatten, Collect List, Split
-    if (groupByCollectList) {
+    if (demo.groupByCollectList) {
       val flattenDistinct = udf((xs: Seq[Seq[String]]) => xs.flatten.distinct)
       fruitsDF
         .groupBy("customer")
@@ -82,20 +97,18 @@ object SparkSqlFunctions {
         ).show
     }
 
-    // approxQuantile
-    if (approxQuantile) {
+    if (demo.approxQuantile) {
       val quantiles = fruitsDF.stat.approxQuantile("cost", Array(0.25, 0.5, 0.75), 0.1)
       println(s"Quantile values: ${quantiles.toSeq}")
     }
 
-    // Duplicate Checker
-    if (checkDuplicates) {
+    // UDFs
+    if (demo.checkDuplicates) {
       val duplicateFruits = SparkSqlUdfs.getDuplicateDF(fruitsDF, Seq("fruit", "customer"))
       duplicateFruits.show
     }
 
-    // Time series data
-    if (formatDateUdf) {
+    if (demo.formatDateUdf) {
       val ts1RawDf = reader.readTimeSeriesCsv(1)
       ts1RawDf.show
       ts1RawDf.withColumn("formattedDate", SparkSqlUdfs.formatTimestampUdf(col("date"))).show
