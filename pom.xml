@@ -47,6 +47,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <modules>
+                <module>flink</module>
                 <module>spark</module>
                 <module>kafka</module>
                 <module>spark-kafka</module>
