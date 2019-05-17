@@ -5,6 +5,8 @@ import com.waiyan.ume.kafka.model.Transaction;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 
+import java.time.Duration;
+
 public class ConsumerApp {
     public static void main(String[] args) {
         runConsumer();
@@ -13,7 +15,7 @@ public class ConsumerApp {
         Consumer<Long, Transaction> consumer = ConsumerCreator.createConsumer();
         int noMessageFound = 0;
         while (true) {
-            ConsumerRecords<Long, Transaction> consumerRecords = consumer.poll(1000);
+            ConsumerRecords<Long, Transaction> consumerRecords = consumer.poll(Duration.ofSeconds(1));
             // 1000 is the time in milliseconds consumer will wait if no record is found at broker.
             if (consumerRecords.count() == 0) {
                 noMessageFound++;
