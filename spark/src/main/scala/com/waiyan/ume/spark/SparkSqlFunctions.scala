@@ -1,7 +1,9 @@
 package com.waiyan.ume.spark
 
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types.StringType
 
 object SparkSqlFunctions {
 
@@ -18,6 +20,9 @@ object SparkSqlFunctions {
     val fruitsDF = reader.readFruitsCsv()
 
     case class Demo(
+      window: Boolean = false, // window
+      agg: Boolean = false, // cast, round
+      sql: Boolean = false, // raw sql on table/view
       cast: Boolean = false, // cast, round
       when: Boolean = false, // when-otherwise, concat, substring, split
       explode: Boolean = true, // explode, explode_outer
@@ -31,11 +36,32 @@ object SparkSqlFunctions {
     )
     val demo = Demo()
 
+    if (demo.window) {
+      val w = Window.partitionBy(col("customer")).orderBy(col("qty").desc_nulls_last)
+      fruitsDF.withColumn("seq", row_number.over(w)).show
+    }
+
+    // operations on columns ignore nulls
+    if (demo.agg)
+      fruitsDF
+        .select(
+          avg("qty"),
+          sum("qty"),
+          count("qty"),
+          count("*")
+        ).show
+
+    if (demo.sql) {
+      fruitsDF.createOrReplaceTempView("fruits")
+      spark.sql("SELECT count(*) AS count FROM fruits").show
+    }
+
     // Casting and Rounding
     if (demo.cast) {
       fruitsDF
         .withColumn("cost_int", col("cost").cast("integer"))
         .withColumn("cost_rounded", round(col("cost")).cast("integer"))
+        .withColumn("null_col", lit(null).cast(StringType))
         .show
     }
 
