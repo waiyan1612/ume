@@ -5,6 +5,12 @@ import org.apache.spark.sql.types._
 
 class SparkReader(spark: SparkSession) {
 
+  val customerSchema = StructType(
+    Array(
+      StructField("name", StringType, false),
+      StructField("country", StringType, false)
+    ))
+
   val fruitSchema = StructType(
     Array(
       StructField("customer", StringType, false),
@@ -26,6 +32,11 @@ class SparkReader(spark: SparkSession) {
       StructField("url", StringType, false)
     ))
 
+  def readCustomersCsv() = {
+    val customersCsv = getClass.getResource("/data/customers.csv").getPath
+    spark.read.format("csv").schema(customerSchema).load(customersCsv)
+  }
+
   def readFruitsCsv() = {
     val fruitsCsv = getClass.getResource("/data/fruits.csv").getPath
     spark.read.format("csv").schema(fruitSchema).load(fruitsCsv)
@@ -41,7 +52,7 @@ class SparkReader(spark: SparkSession) {
     spark.read.format("csv").schema(urlSchema).load(urlCsv)
   }
 
-  def readFromSeq() = {
+  def readFromFruitSeq() = {
     val fruitSeq = Seq(
       Row("alice", "apple", 1, null),
       Row("alice", "orange", null, 3.5),
@@ -74,7 +85,7 @@ object SparkReader {
     val fruitCsvDF = reader.readFruitsCsv()
     fruitCsvDF.show
 
-    val fruitSeqDF = reader.readFromSeq()
+    val fruitSeqDF = reader.readFromFruitSeq()
     fruitSeqDF.show
   }
 }
