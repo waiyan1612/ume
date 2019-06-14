@@ -92,9 +92,9 @@
             <version>3.3.0</version>
         </dependency>
         <dependency>
-            <groupId>com.github.kxbmap</groupId>
-            <artifactId>configs_${scalaMajorVersion}</artifactId>
-            <version>0.2.5</version>
+            <groupId>com.github.pureconfig</groupId>
+            <artifactId>pureconfig_${scalaMajorVersion}</artifactId>
+            <version>0.11.0</version>
         </dependency>
     </dependencies>
     <build>
