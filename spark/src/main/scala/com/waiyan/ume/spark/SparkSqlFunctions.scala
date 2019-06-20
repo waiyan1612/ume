@@ -1,6 +1,6 @@
 package com.waiyan.ume.spark
 
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{ Column, DataFrame, SparkSession }
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.StringType
@@ -26,6 +26,8 @@ object SparkSqlFunctions {
       cast: Boolean = false, // cast, round
       when: Boolean = false, // when-otherwise, concat, substring, split
       explode: Boolean = true, // explode, explode_outer
+      isin: Boolean = false,
+      nullCheck: Boolean = false,
       pivot: Boolean = false,
       regex: Boolean = false, // regexp_replace
       na: Boolean = false, // na functions
@@ -85,6 +87,46 @@ object SparkSqlFunctions {
       daysDf.withColumn("day", explode(col("dayList"))).show
       // How to keep alice alive
       daysDf.withColumn("day", explode_outer(col("dayList"))).show
+    }
+
+    if (demo.isin) {
+      val DAYS = Seq("SUN", "MON")
+      val daysDf = fruitsDF
+        .withColumn("dayList", when(col("customer") === "alice", typedLit(null)).otherwise(typedLit(DAYS)))
+        .withColumn("day", explode_outer(col("dayList")))
+
+      val SUNDAY = Seq("SUN")
+      daysDf.filter(col("day").isin(SUNDAY: _*)).show()
+      // isin doesn't keep NULLS for Seq[String]
+      daysDf.filter(col("day").isin(SUNDAY: _*)).show()
+    }
+
+    if (demo.nullCheck) {
+      val nullDf = fruitsDF.withColumn(
+        "title",
+        when(col("customer") === "alice", lit("Ms"))
+          .when(col("customer") === "bob", lit("Mr"))
+          .otherwise(typedLit(null)))
+
+      def filter(condition: Option[Column], seq: Int, desc: String, note: String): DataFrame = {
+        val df = nullDf
+          .select("customer", "title", "cost").distinct
+          .withColumn("desc", lit(desc))
+          .withColumn("note", lit(note))
+          .withColumn("seq", lit(seq))
+        if (condition.isEmpty) df else df.filter(condition.get)
+      }
+
+      val c0 = filter(None, 0, "", "original")
+      val c1 = filter(Some(col("title") === "Mr"), 1, " title === Mr ", "")
+      val c2 = filter(Some(col("title") =!= "Mr"), 2, " title =!= Mr ", "nulls are gone (carol)")
+      val c3 = filter(Some(!(col("title") <=> "Mr")), 3, " !title <=> Mr ", "nulls are kept")
+      val c4 = filter(Some(col("cost") === 0.5), 4, " cost === 0.5 ", "")
+      val c5 = filter(Some(col("cost") =!= 0.5), 5, " cost =!= 0.5 ", "nulls are gone")
+      val c6 = filter(Some(!(col("cost") <=> 0.5)), 6, " !cost <=> 0.5 ", "nulls are kept")
+      c0.union(c1).union(c2).union(c3)
+        .union(c4).union(c5).union(c6)
+        .sort("seq", "customer").show(50, false)
     }
 
     if (demo.pivot) {
