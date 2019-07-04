@@ -1,9 +1,9 @@
 package com.waiyan.ume.spark
 
-import org.apache.spark.sql.{ Column, DataFrame, SparkSession }
+import org.apache.spark.sql.{ Column, DataFrame, Row, SparkSession }
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types.StringType
+import org.apache.spark.sql.types._
 
 object SparkSqlFunctions {
 
@@ -20,6 +20,7 @@ object SparkSqlFunctions {
     val fruitsDF = reader.readFruitsCsv()
 
     case class Demo(
+      rdd: Boolean = false,
       window: Boolean = false, // window
       agg: Boolean = false, // cast, round
       sql: Boolean = false, // raw sql on table/view
@@ -37,6 +38,17 @@ object SparkSqlFunctions {
       formatDateUdf: Boolean = false
     )
     val demo = Demo()
+
+    if (demo.rdd) {
+      fruitsDF.show
+      val schema = StructType(fruitsDF.schema.fields.toList ++ List(StructField("rank", LongType, false)))
+      val fruitsRdd = fruitsDF.rdd
+        .sortBy(_.getAs[Int]("qty"), false) // get field by name
+        .zipWithIndex() // zip with index
+        .map(x => Row.fromSeq(x._1.toSeq ++ Seq[Long](x._2))) // merge tuples
+      val fruitsRddDf = spark.createDataFrame(fruitsRdd, schema) // recreate dataframe
+      fruitsRddDf.show
+    }
 
     if (demo.window) {
       val w = Window.partitionBy(col("customer")).orderBy(col("qty").desc_nulls_last)
