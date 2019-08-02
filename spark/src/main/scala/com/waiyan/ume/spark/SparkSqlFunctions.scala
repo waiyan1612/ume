@@ -32,6 +32,7 @@ object SparkSqlFunctions {
       pivot: Boolean = false,
       regex: Boolean = false, // regexp_replace
       na: Boolean = false, // na functions
+      join: Boolean = false,
       groupByCollectList: Boolean = false, // flattenDistinct, collect_list
       approxQuantile: Boolean = false, // approxQuantile
       checkDuplicates: Boolean = false,
@@ -107,10 +108,11 @@ object SparkSqlFunctions {
         .withColumn("dayList", when(col("customer") === "alice", typedLit(null)).otherwise(typedLit(DAYS)))
         .withColumn("day", explode_outer(col("dayList")))
 
+      // isin doesn't keep NULLS
       val SUNDAY = Seq("SUN")
       daysDf.filter(col("day").isin(SUNDAY: _*)).show()
-      // isin doesn't keep NULLS for Seq[String]
-      daysDf.filter(col("day").isin(SUNDAY: _*)).show()
+      // Alternative without defining the list
+      daysDf.filter(col("day").isin("SUN")).show
     }
 
     if (demo.nullCheck) {
@@ -166,6 +168,17 @@ object SparkSqlFunctions {
         .withColumn("cost", col("cost").cast("double"))
         .na.drop
         .show
+    }
+
+    if(demo.join) {
+      val customersDf = reader.readCustomersCsv()
+      val fruitsDf = reader.readFruitsCsv()
+      // left join
+      fruitsDf.join(customersDf, col("name") === col("customer"), "left").show
+      // filter left before join
+      fruitsDf.filter(col("customer") === "alice").join(customersDf, col("name") === col("customer"), "left").show
+      // join on left is alice and keys match
+      fruitsDf.join(customersDf, col("customer") === "alice" && col("name") === col("customer"), "left").show
     }
 
     if (demo.groupByCollectList) {
