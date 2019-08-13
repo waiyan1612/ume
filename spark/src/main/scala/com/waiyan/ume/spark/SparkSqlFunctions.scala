@@ -35,6 +35,7 @@ object SparkSqlFunctions {
       join: Boolean = false,
       groupByCollectList: Boolean = false, // flattenDistinct, collect_list
       approxQuantile: Boolean = false, // approxQuantile
+      mergeSchema: Boolean = false,
       checkDuplicates: Boolean = false,
       formatDateUdf: Boolean = false
     )
@@ -193,6 +194,14 @@ object SparkSqlFunctions {
     if (demo.approxQuantile) {
       val quantiles = fruitsDF.stat.approxQuantile("cost", Array(0.25, 0.5, 0.75), 0.1)
       println(s"Quantile values: ${quantiles.toSeq}")
+    }
+
+    if (demo.mergeSchema) {
+      fruitsDF.coalesce(1).write.mode("overwrite").parquet("/tmp/quickTest/folderId=1")
+      fruitsDF.withColumn("myNewColumn", lit(2)).coalesce(1).write.mode("overwrite").parquet("/tmp/quickTest/folderId=2")
+      spark.read.parquet("/tmp/quickTest").show(false)
+      spark.read.parquet("/tmp/quickTest/folderId=2").show(false)
+      spark.read.option("mergeSchema", true).parquet("/tmp/quickTest").show(false)
     }
 
     // UDFs

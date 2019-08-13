@@ -1,6 +1,5 @@
 package com.waiyan.ume.spark
 
-import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -25,6 +24,7 @@ object SparkSqlUdfs {
   }
 
   // Use this function to search for duplicate rows
+  import org.apache.spark.sql.DataFrame
   def getDuplicateDF(df: DataFrame, primaryKeys: Seq[String]): DataFrame = {
     val columns = primaryKeys.map(x => col(x))
     val countDf = df

@@ -22,7 +22,7 @@ object SparkDateTimeFunctions {
     val reader = new SparkReader(spark)
     val fruitsDF = reader.readFruitsCsv()
 
-    val read = false
+    val read = true
 
     if(!read) {
       println(s"${spark.conf.get("spark.sql.session.timeZone")} before setting spark.sql.session.timeZone to UTC")
@@ -32,16 +32,19 @@ object SparkDateTimeFunctions {
       println(s"${spark.conf.get("spark.sql.session.timeZone")} after setting spark.sql.session.timeZone to UTC")
       writeDf(fruitsDF, "/tmp/timezones/2")
     } else {
+      spark.conf.set("spark.sql.session.timeZone", "UTC")
       val df1 = spark.read.parquet("/tmp/timezones/1").withColumn("path", lit("/tmp/timezones/1"))
       val df2 = spark.read.parquet("/tmp/timezones/2").withColumn("path", lit("/tmp/timezones/2"))
-      df1.union(df2).show(false)
+      val df = df1.union(df2)
+      df.show(false)
+      df.printSchema()
     }
   }
 
   def writeDf(fruitsDF: DataFrame, path: String) = {
     val localNow = java.time.LocalDateTime.now()
     val utcNow = java.time.LocalDateTime.now(ZoneId.of("UTC"))
-    val sqlNow = new java.sql.Time(Calendar.getInstance().getTime.getTime)
+    val sqlNow = new java.sql.Timestamp(Calendar.getInstance().getTime.getTime)
     val currentTimestamp = org.apache.spark.sql.functions.current_timestamp()
 
     val df = fruitsDF
