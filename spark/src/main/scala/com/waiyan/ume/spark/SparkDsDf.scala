@@ -58,7 +58,6 @@ object SparkDsDf {
       .builder()
       .master("local")
       .appName(this.getClass.getName)
-      .config("spark.hadoop.mapreduce.input.fileinputformat.input.dir.recursive", true)
       .getOrCreate()
 
     val reader = new SparkReader(spark)

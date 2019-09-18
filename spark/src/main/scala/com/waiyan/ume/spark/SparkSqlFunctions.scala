@@ -12,7 +12,6 @@ object SparkSqlFunctions {
       .builder()
       .master("local")
       .appName(this.getClass.getName)
-      .config("spark.hadoop.mapreduce.input.fileinputformat.input.dir.recursive", true)
       .getOrCreate()
 
     // Reading from Seq or CSV with a schema

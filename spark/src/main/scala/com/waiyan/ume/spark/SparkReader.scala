@@ -1,9 +1,35 @@
 package com.waiyan.ume.spark
 
-import org.apache.spark.sql.{ Row, SparkSession }
+import org.apache.spark.sql.{Row, SparkSession}
 import org.apache.spark.sql.types._
 
 class SparkReader(spark: SparkSession) {
+
+
+  val intSchema = StructType(Array(StructField("id", StringType, false), StructField("value", IntegerType, false)))
+  val doubleSchema = StructType(Array(StructField("id", StringType, false), StructField("value", DoubleType, false)))
+  val stringSchema = StructType(Array(StructField("id", StringType, false), StructField("value", StringType, false)))
+
+  def getIntDf() = {
+    spark.createDataFrame(spark.sparkContext.parallelize(Seq(
+      Row("a", 1),
+      Row("b", 2)
+    )), intSchema)
+  }
+
+  def getDoubleDf() = {
+    spark.createDataFrame(spark.sparkContext.parallelize(Seq(
+      Row("a", 1.0),
+      Row("b", 2.0)
+    )), doubleSchema)
+  }
+
+  def getStringDf() = {
+    spark.createDataFrame(spark.sparkContext.parallelize(Seq(
+      Row("a", "1"),
+      Row("b", "2")
+    )), stringSchema)
+  }
 
   val customerSchema = StructType(
     Array(
@@ -52,6 +78,14 @@ class SparkReader(spark: SparkSession) {
     spark.read.format("csv").schema(urlSchema).load(urlCsv)
   }
 
+  def readRFC4180Csv(spark: SparkSession, input: String) = {
+    spark.read
+      .option("header",true)
+      .option("quote","\"")
+      .option("escape","\"")
+      .csv(input)
+  }
+
   def readFromFruitSeq() = {
     val fruitSeq = Seq(
       Row("alice", "apple", 1, null),
@@ -77,7 +111,6 @@ object SparkReader {
       .builder()
       .master("local")
       .appName(this.getClass.getName)
-      .config("spark.hadoop.mapreduce.input.fileinputformat.input.dir.recursive", true)
       .getOrCreate()
 
     val reader = new SparkReader(spark)

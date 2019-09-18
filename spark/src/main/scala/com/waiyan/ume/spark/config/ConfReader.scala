@@ -71,11 +71,8 @@ object ConfReader {
       .builder()
       .master("local")
       .appName(this.getClass.getName)
-      .config("spark.hadoop.mapreduce.input.fileinputformat.input.dir.recursive", true)
       .getOrCreate()
 
-//    val absoluteConfPath = "file:///.../mahou/spark/src/main/resources/conf/"
-//    val pureConfig = Config.from(absoluteConfPath, Some(spark))
     val pureConfig = ConfReader.from("conf")
     println(pureConfig)
 

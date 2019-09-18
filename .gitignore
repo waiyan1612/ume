@@ -4,3 +4,4 @@ spark/target
 flink/target
 spark-kafka/target
 kafka/target
+*.iml

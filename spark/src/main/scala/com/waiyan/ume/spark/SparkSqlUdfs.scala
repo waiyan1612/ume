@@ -23,6 +23,12 @@ object SparkSqlUdfs {
       formatTimestamp(timestamp)
   }
 
+  def formatDecimal(valueToFormat: Double, scale: String): String = s"%1.${scale}f".format(valueToFormat)
+
+  def formatDecimalUdf: UserDefinedFunction = udf {
+    (valueToFormat: Double, precisionString: String) => formatDecimal(valueToFormat, precisionString)
+  }
+
   // Use this function to search for duplicate rows
   import org.apache.spark.sql.DataFrame
   def getDuplicateDF(df: DataFrame, primaryKeys: Seq[String]): DataFrame = {
@@ -33,4 +39,20 @@ object SparkSqlUdfs {
       .filter(col("count") > 1)
     df.join(countDf, primaryKeys, "inner")
   }
+
+  def extractJson[T: Manifest](jsonString:String, path: String):  Option[T] = {
+    import org.json4s._
+    import org.json4s.jackson.JsonMethods._
+    implicit val formats: DefaultFormats.type = DefaultFormats
+    try {
+      val json = parse(jsonString)
+      path.split('.').foldLeft(json)({ case (acc, node) => acc \ node }).extractOpt[T]
+    } catch {
+      case e: Exception => println(e.getMessage)
+        None
+    }
+  }
+
+  def extractString(path: String) = udf { jsonString: String => extractJson[String] (jsonString, path) }
+
 }
