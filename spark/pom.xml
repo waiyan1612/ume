@@ -20,7 +20,7 @@
         <javaVersion>1.8</javaVersion>
         <scalaVersion>2.11.8</scalaVersion>
         <scalaMajorVersion>2.11</scalaMajorVersion>
-        <sparkVersion>2.2.0</sparkVersion>
+        <sparkVersion>2.4.0</sparkVersion>
         <main.basedir>${project.basedir}</main.basedir>
     </properties>
     <dependencies>
@@ -82,7 +82,7 @@
         <dependency>
             <groupId>com.holdenkarau</groupId>
             <artifactId>spark-testing-base_${scalaMajorVersion}</artifactId>
-            <version>${sparkVersion}_0.8.0</version>
+            <version>2.2.0_0.8.0</version>
             <scope>test</scope>
         </dependency>
         <!-- 3rd party dependencies -->
