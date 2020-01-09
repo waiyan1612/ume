@@ -1,7 +1,4 @@
 dependency-reduced-pom.xml
 spark/src/main/python/.ipynb_checkpoints
-spark/target
-flink/target
-spark-kafka/target
-kafka/target
+target/
 *.iml

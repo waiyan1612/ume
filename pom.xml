@@ -51,6 +51,7 @@
                 <module>spark</module>
                 <module>kafka</module>
                 <module>spark-kafka</module>
+                <module>spark-aws</module>
             </modules>
         </profile>
     </profiles>
