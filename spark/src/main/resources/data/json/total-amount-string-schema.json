@@ -1,0 +1,61 @@
+{
+  "type" : "struct",
+  "fields" : [ {
+    "name" : "charges",
+    "type" : {
+      "type" : "array",
+      "elementType" : "string",
+      "containsNull" : true
+    },
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "company",
+    "type" : {
+      "type" : "struct",
+      "fields" : [ {
+        "name" : "additionalData",
+        "type" : {
+          "type" : "struct",
+          "fields" : [ {
+            "name" : "companyContact",
+            "type" : {
+              "type" : "array",
+              "elementType" : {
+                "type" : "struct",
+                "fields" : [ {
+                  "name" : "countryLocationISO36611Alpha2Code",
+                  "type" : "string",
+                  "nullable" : true,
+                  "metadata" : { }
+                }, {
+                  "name" : "emailAddress",
+                  "type" : "string",
+                  "nullable" : true,
+                  "metadata" : { }
+                } ]
+              },
+              "containsNull" : true
+            },
+            "nullable" : true,
+            "metadata" : { }
+          } ]
+        },
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "id",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      } ]
+    },
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "totalAmount",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  } ]
+}
