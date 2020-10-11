@@ -1,13 +1,17 @@
-package com.waiyan.ume.spark
+package com.waiyan.ume.spark.snippets
 
 import java.time.ZoneId
 import java.util.Calendar
 
-import org.apache.spark.sql.types._
+import com.waiyan.ume.spark.SparkReader
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SparkSession}
 
-object SparkDateTimeFunctions {
+/**
+* Showcase the different behaviour of different date/time functions
+ */
+object DateTimeSnippet {
 
   def main(args: Array[String]): Unit = {
     val spark = SparkSession

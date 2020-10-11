@@ -1,10 +1,11 @@
-package com.waiyan.ume.spark
+package com.waiyan.ume.spark.snippets
 
+import com.waiyan.ume.spark.SparkReader
 import org.apache.spark.sql.expressions.Window
-import org.apache.spark.sql.{ DataFrame, Dataset, SparkSession }
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
-object SparkDsDf {
+object DatasetSnippet {
 
   case class Fruit(customer: String, fruit: String, qty: java.lang.Integer, cost: java.lang.Double)
   case class FruitWindow(customer: String, fruit: String, qty: java.lang.Integer, cost: java.lang.Double, seq: Int)

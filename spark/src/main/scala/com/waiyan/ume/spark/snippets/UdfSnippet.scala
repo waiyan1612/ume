@@ -1,12 +1,12 @@
-package com.waiyan.ume.spark
+package com.waiyan.ume.spark.snippets
 
-import org.apache.spark.sql.functions._
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 import org.apache.spark.sql.expressions.UserDefinedFunction
+import org.apache.spark.sql.functions._
 
-object SparkSqlUdfs {
+object UdfSnippet {
 
   object Formatters {
     val fromFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")

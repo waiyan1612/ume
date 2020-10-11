@@ -1,11 +1,11 @@
-package com.waiyan.ume.spark
+package com.waiyan.ume.spark.snippets
 
 import org.apache.spark.sql.expressions.UserDefinedFunction
-import org.apache.spark.sql.{Column, DataFrame, SparkSession}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{DataType, StructType}
+import org.apache.spark.sql.{Column, DataFrame, SparkSession}
 
-object SparkJson {
+object JsonSnippet {
 
   case class CompanyContact(emailAddress: String, countryLocationISO36611Alpha2Code: String)
 

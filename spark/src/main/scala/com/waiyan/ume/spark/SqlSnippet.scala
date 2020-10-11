@@ -1,11 +1,12 @@
 package com.waiyan.ume.spark
 
-import org.apache.spark.sql.{ Column, DataFrame, Row, SparkSession }
+import com.waiyan.ume.spark.snippets.UdfSnippet
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.{Column, DataFrame, Row, SparkSession}
 
-object SparkSqlFunctions {
+object SqlSnippet {
 
   def main(args: Array[String]): Unit = {
     val spark = SparkSession
@@ -205,14 +206,14 @@ object SparkSqlFunctions {
 
     // UDFs
     if (demo.checkDuplicates) {
-      val duplicateFruits = SparkSqlUdfs.getDuplicateDF(fruitsDF, Seq("fruit", "customer"))
+      val duplicateFruits = UdfSnippet.getDuplicateDF(fruitsDF, Seq("fruit", "customer"))
       duplicateFruits.show
     }
 
     if (demo.formatDateUdf) {
       val ts1RawDf = reader.readTimeSeriesCsv(1)
       ts1RawDf.show
-      ts1RawDf.withColumn("formattedDate", SparkSqlUdfs.formatTimestampUdf(col("date"))).show
+      ts1RawDf.withColumn("formattedDate", UdfSnippet.formatTimestampUdf(col("date"))).show
     }
   }
 

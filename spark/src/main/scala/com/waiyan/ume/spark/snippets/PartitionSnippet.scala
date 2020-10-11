@@ -1,9 +1,10 @@
-package com.waiyan.ume.spark
+package com.waiyan.ume.spark.snippets
 
+import com.waiyan.ume.spark.SparkReader
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions.{ col, split }
+import org.apache.spark.sql.functions.{col, split}
 
-object SparkPartitioning {
+object PartitionSnippet {
 
   def testPartition(): Unit = {
     val spark = SparkSession
@@ -54,9 +55,9 @@ object SparkPartitioning {
     val spark = SparkSession.builder().master("local").getOrCreate()
 
     val sparkReader = new SparkReader(spark)
-    val intDf = sparkReader.getIntDf()
-    val doubleDf = sparkReader.getDoubleDf()
-    val stringDf = sparkReader.getStringDf()
+    val intDf = sparkReader.generateIntDf()
+    val doubleDf = sparkReader.generateDoubleDf()
+    val stringDf = sparkReader.generateStringDf()
 
     intDf.coalesce(1).write.mode("overwrite").parquet("/tmp/partition-test/t=int")
     doubleDf.coalesce(1).write.mode("overwrite").parquet("/tmp/partition-test/t=double")
