@@ -31,12 +31,6 @@
             <artifactId>scala-reflect</artifactId>
             <version>${scalaVersion}</version>
         </dependency>
-        <dependency>
-            <groupId>org.scalacheck</groupId>
-            <artifactId>scalacheck_${scalaMajorVersion}</artifactId>
-            <version>1.12.5</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <profiles>
@@ -49,6 +43,7 @@
             <modules>
                 <module>flink</module>
                 <module>spark</module>
+                <module>spark3</module>
                 <module>kafka</module>
                 <module>spark-kafka</module>
                 <module>spark-aws</module>
