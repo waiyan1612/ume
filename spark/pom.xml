@@ -15,11 +15,6 @@
     </parent>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <javaVersion>1.8</javaVersion>
-        <scalaVersion>2.11.8</scalaVersion>
-        <scalaMajorVersion>2.11</scalaMajorVersion>
         <sparkVersion>2.4.0</sparkVersion>
         <main.basedir>${project.basedir}</main.basedir>
     </properties>
@@ -82,14 +77,14 @@
         <dependency>
             <groupId>com.holdenkarau</groupId>
             <artifactId>spark-testing-base_${scalaMajorVersion}</artifactId>
-            <version>2.2.0_0.8.0</version>
+            <version>${sparkVersion}_0.14.0</version>
             <scope>test</scope>
         </dependency>
         <!-- 3rd party dependencies -->
         <dependency>
             <groupId>com.github.scopt</groupId>
             <artifactId>scopt_${scalaMajorVersion}</artifactId>
-            <version>3.3.0</version>
+            <version>3.7.1</version>
         </dependency>
         <dependency>
             <groupId>com.github.pureconfig</groupId>

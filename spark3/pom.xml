@@ -15,9 +15,6 @@
     </parent>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <javaVersion>1.8</javaVersion>
         <scalaVersion>2.12.12</scalaVersion>
         <scalaMajorVersion>2.12</scalaMajorVersion>
         <sparkVersion>3.0.1</sparkVersion>
