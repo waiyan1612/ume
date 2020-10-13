@@ -1,6 +1,5 @@
 package com.waiyan.ume.spark.streaming
 
-import com.waiyan.ume.kafka.IKafkaConstants
 import com.waiyan.ume.kafka.model.Transaction
 import com.waiyan.ume.kafka.serializer.TransactionDeserializer
 import org.apache.spark.sql.SparkSession
@@ -8,10 +7,9 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.streaming.Trigger
 import java.util.concurrent.TimeUnit
 
-// This is a Scala redefinition of com.waiyan.ume.kafka.model.Transaction
-case class Txn(dt: java.sql.Timestamp, cId: Int, pId: String)
+import com.waiyan.ume.kafka.topic.Topic
 
-object KafkaConsumer {
+object KafkaConsumer extends Serializable {
 
   def main(args: Array[String]): Unit = {
 
@@ -21,22 +19,25 @@ object KafkaConsumer {
       .appName(this.getClass.getName)
       .getOrCreate()
 
+    val BROKER_LIST = "localhost:29092"
+    val TOPIC_NAME = Topic.TXN.name()
+
     val txnStream = spark.readStream
       .format("kafka")
-      .option("kafka.bootstrap.servers", IKafkaConstants.KAFKA_BROKERS)
-      .option("subscribe", IKafkaConstants.TOPIC_NAME)
+      .option("kafka.bootstrap.servers", BROKER_LIST)
+      .option("subscribe", TOPIC_NAME)
       .load()
 
     object TransactionDeserializerWrapper {
       val deser = new TransactionDeserializer
-      val scalarize = (t: Transaction) =>
+      val scalarize: Transaction => Txn = (t: Transaction) =>
         Txn(java.sql.Timestamp.valueOf(t.getPurchasedDate), t.getCustomerId, t.getProductId)
     }
 
     val deserializeUdf = udf {
       bytes: Array[Byte] =>
         {
-          val t = TransactionDeserializerWrapper.deser.deserialize(IKafkaConstants.TOPIC_NAME, bytes)
+          val t = TransactionDeserializerWrapper.deser.deserialize(TOPIC_NAME, bytes)
           TransactionDeserializerWrapper.scalarize(t)
         }
     }
@@ -50,17 +51,24 @@ object KafkaConsumer {
       .select(deserializeUdf(col("value")).as("txn"))
       .select("txn.dt", "txn.cId", "txn.pId").as[Txn]
 
+    case class Demo(
+      noWatermark: Boolean = false,
+      watermarkUpdate: Boolean = true,
+      watermarkAppend: Boolean = false,
+      writeToDisk: Boolean = false,
+    )
+    val demo = Demo()
+
     // Trigger.ProcessingTime can be used to how fast you want to consume the incoming data
     // By default, spark remembers all the windows forever and waits for the late events forever
-    val txnNonWatermark = txnDf
-      .groupBy(window(col("dt"), "4 minutes", "2 minutes"))
-      .count
-
-    val q1 = txnNonWatermark.writeStream
-      .option("truncate", false).outputMode("update").format("console")
-      .trigger(Trigger.ProcessingTime(1, TimeUnit.MINUTES)).start
-
-    q1.stop
+    if(demo.noWatermark) {
+      val txnNonWatermark = txnDf
+        .groupBy(window(col("dt"), "4 minutes", "2 minutes"))
+        .count
+      txnNonWatermark.writeStream
+        .option("truncate", false).outputMode("update").format("console")
+        .trigger(Trigger.ProcessingTime(1, TimeUnit.MINUTES)).start
+    }
 
     // Wait late events for 5 min (an entry is intentionally delayed by 1-9 min by Kafka Producer)
     // Data comes in every 30 s, perform operations within 4 minute windows, sliding every 2 minutes
@@ -132,11 +140,11 @@ object KafkaConsumer {
       .groupBy(window(col("dt"), "4 minutes", "2 minutes"))
       .count
 
-    val q2 = txnWatermark.writeStream
-      .option("truncate", false).outputMode("update").format("console")
-      .trigger(Trigger.ProcessingTime(1, TimeUnit.MINUTES)).start
-
-    q2.stop
+    if(demo.watermarkUpdate) {
+      txnWatermark.writeStream
+        .option("truncate", false).outputMode("update").format("console")
+        .trigger(Trigger.ProcessingTime(1, TimeUnit.MINUTES)).start
+    }
 
     /*
 
@@ -160,27 +168,28 @@ object KafkaConsumer {
       +---------+---------------------------------------------+-----+---------+
 
      */
-
-    val q3 = txnWatermark.writeStream
-      .option("truncate", false).outputMode("append").format("console")
-      .trigger(Trigger.ProcessingTime(2, TimeUnit.MINUTES)).start
-
-    q3.stop
+    if(demo.watermarkAppend) {
+      txnWatermark.writeStream
+        .option("truncate", false).outputMode("append").format("console")
+        .trigger(Trigger.ProcessingTime(2, TimeUnit.MINUTES)).start
+    }
 
     // Write to parquet with checkpoints
-    val customerDf = txnDf
-      .withWatermark("dt", "4 minutes")
-      .groupBy(window(col("dt"), "2 minutes"), col("cId"))
-      .agg(count("pId").as("itemsBought"))
+    if(demo.watermarkAppend) {
 
-    val customerQ = customerDf.writeStream
-      .outputMode("append")
-      .trigger(Trigger.ProcessingTime(2, TimeUnit.MINUTES))
-      .format("parquet")
-      .option("path", "ume-spark-kafka")
-      .option("checkpointLocation", "ume-spark-kafka-checkpoint")
-      .start
+      val customerDf = txnDf
+        .withWatermark("dt", "4 minutes")
+        .groupBy(window(col("dt"), "2 minutes"), col("cId"))
+        .agg(count("pId").as("itemsBought"))
 
+      customerDf.writeStream
+        .outputMode("append")
+        .trigger(Trigger.ProcessingTime(2, TimeUnit.MINUTES))
+        .format("parquet")
+        .option("path", "ume-spark-kafka")
+        .option("checkpointLocation", "ume-spark-kafka-checkpoint")
+        .start
+    }
     spark.streams.awaitAnyTermination
   }
 

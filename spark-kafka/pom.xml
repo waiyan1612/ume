@@ -15,8 +15,8 @@
     </parent>
 
     <properties>
-        <sparkVersion>2.4.0</sparkVersion>
-        <kafkaVersion>2.1.0</kafkaVersion>
+        <sparkVersion>2.4.6</sparkVersion>
+        <kafkaVersion>2.2.0</kafkaVersion>
         <main.basedir>${project.basedir}</main.basedir>
     </properties>
     <dependencies>
@@ -26,13 +26,28 @@
             <groupId>com.waiyan</groupId>
             <artifactId>kafka</artifactId>
             <version>${project.version}</version>
+            <!-- Exclude logging -->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-slf4j-impl</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Forcing maven to use the following dependency. -->
         <!-- If unspecified, mvn will resolve it to the version used by spark, which is not what we want -->
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>2.9.7</version>
+            <version>2.6.7</version>
         </dependency>
 
         <!-- Spark dependencies -->
@@ -66,6 +81,7 @@
             <version>${sparkVersion}</version>
             <scope>provided</scope>
         </dependency>
+
         <!-- Spark Kafka Dependencies -->
         <dependency>
             <groupId>org.apache.kafka</groupId>
@@ -77,7 +93,6 @@
             <artifactId>kafka-streams</artifactId>
             <version>${kafkaVersion}</version>
         </dependency>
-        <!-- Spark Kafka Dependencies -->
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-streaming-kafka-0-10_${scalaMajorVersion}</artifactId>
@@ -101,12 +116,6 @@
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_${scalaMajorVersion}</artifactId>
             <version>3.2.2</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.holdenkarau</groupId>
-            <artifactId>spark-testing-base_${scalaMajorVersion}</artifactId>
-            <version>${sparkVersion}_0.14.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

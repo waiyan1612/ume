@@ -4,10 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.waiyan.ume.kafka.model.Transaction;
 import org.apache.kafka.common.serialization.Deserializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
 public class TransactionDeserializer implements Deserializer<Transaction> {
+
+    private static Logger logger = LoggerFactory.getLogger(TransactionDeserializer.class);
 
     @Override
     public void configure(Map<String, ?> configs, boolean isKey){
@@ -20,8 +24,8 @@ public class TransactionDeserializer implements Deserializer<Transaction> {
         Transaction object = null;
         try {
             object = mapper.readValue(data, Transaction.class);
-        } catch (Exception exception) {
-            System.out.println("Error in deserializing bytes "+ exception);
+        } catch (Exception e) {
+            logger.error("Error in deserializing bytes", e);
         }
         return object;
     }
